@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import ProfileHeader from '@/components/common/ProfileHeader';
-// import LeadToolbar from '@/components/dashboard/LeadToolbar';
-import LeadToolbar from '../../Components/dashboard/LeadToolbar';
 import LeadCardView from './LeadcardView';
-// import LeadCardView from '@/components/dashboard/LeadCardView';
-// import LeadCardView from './LeadcardView';
-// import LeadCardView from './LeadcardView';
-// import LeadListView from '@/components/dashboard/LeadListView';
-import LeadForm from '@/components/LeadForm';
+import LeadForm from '@/Components/LeadForm';
 
 const AllLeadsPage = () => {
   const [leads, setLeads] = useState([]);
@@ -16,33 +9,17 @@ const AllLeadsPage = () => {
   const [sortAsc, setSortAsc] = useState(true);
   const [viewMode, setViewMode] = useState('card');
   const [showForm, setShowForm] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null); // State for date filter
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
-    // Mock data generation (same as before)
-    const mockLeads = Array(100)
-      .fill()
-      .map((_, index) => {
-        const statusOptions = ['Contacted', 'Pending', 'Follow-up'];
-        const leadOptions = ['Hot', 'Warm', 'Cold'];
-        const categoryOptions = ['My Leads', 'All Leads', 'Converted Leads'];
-        const modifiedDate = new Date();
-        modifiedDate.setDate(modifiedDate.getDate() - Math.floor(Math.random() * 30)); // Random date within the last 30 days
-
-        return {
-          id: index + 1,
-          name: `Karthik Raja ${index + 1}`,
-          organization: `Zero Consultancy Services ${index + 1}`,
-          phone: '98745 61230',
-          email: `karthik${index + 1}@gmail.com`,
-          assignedTo: 'Shivakumar',
-          modified: modifiedDate.toLocaleDateString(),
-          status: statusOptions[index % statusOptions.length],
-          lead: leadOptions[index % leadOptions.length],
-          category: categoryOptions[index % categoryOptions.length],
-          modifiedDateObject: modifiedDate, // For filtering
-        };
-      });
+    const mockLeads = Array(100).fill().map((_, index) => {
+      const statusOptions = ['Contacted', 'Pending', 'Follow-up'];
+      const leadOptions = ['Hot', 'Warm', 'Cold'];
+      const categoryOptions = ['My Leads', 'All Leads', 'Converted Leads'];
+      const modifiedDate = new Date();
+      modifiedDate.setDate(modifiedDate.getDate() - Math.floor(Math.random() * 30));
+      
+    });
     setLeads(mockLeads);
   }, []);
 
@@ -63,51 +40,69 @@ const AllLeadsPage = () => {
     });
 
   return (
-    <div className="flex">
-      <main className="flex-1 bg-gray-50 mt-[-5] min-h-screen p-6">
-        <div className="ml-auto">
-          {/* <ProfileHeader /> */}
-        </div>
-
-        {/* <div className="flex justify-between items-center flex-wrap gap-4 mb-6">
-          <h1 className="text-2xl font-semibold mt-[-100px] text-gray-800">Lead Management</h1>
+    <div className="flex font-[system-ui,-apple-system,BlinkMacSystemFont]">
+      <main className="flex-1 bg-[#F8F8F8] min-h-screen p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-semibold text-gray-900">Leads</h1>
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-black"
+            className="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 transition duration-200"
           >
-            Create Lead
+            + New Lead
           </button>
-        </div> */}
+        </div>
 
-        {/* <LeadToolbar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          sortAsc={sortAsc}
-          setSortAsc={setSortAsc}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-        /> */}
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl shadow-sm mb-6">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full md:w-1/3 px-4 py-2 rounded-xl border border-gray-300 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <div className="flex gap-3 items-center">
+            {['My Leads', 'All Leads', 'Converted Leads'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-xl ${
+                  activeTab === tab
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                } transition duration-200`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setSortAsc(!sortAsc)}
+            className="px-3 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
+          >
+            {sortAsc ? 'A → Z' : 'Z → A'}
+          </button>
+          <button
+            onClick={() => setViewMode(viewMode === 'card' ? 'list' : 'card')}
+            className="px-3 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
+          >
+            {viewMode === 'card' ? 'List View' : 'Card View'}
+          </button>
+        </div>
 
         {viewMode === 'card' && <LeadCardView leads={filteredLeads} />}
         {viewMode === 'list' && <LeadListView leads={filteredLeads} />}
 
         {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white w-full md:w-3/4 lg:w-1/2 overflow-y-auto rounded-md shadow-lg relative">
+          <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white w-full md:w-3/4 lg:w-1/2 max-h-[90vh] overflow-y-auto rounded-2xl shadow-xl relative p-6">
               <button
-                className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-xl focus:outline-none"
+                className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl"
                 onClick={() => setShowForm(false)}
               >
                 &times;
               </button>
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Create New Lead</h2>
-                <LeadForm onClose={() => setShowForm(false)} />
-              </div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Create New Lead</h2>
+              <LeadForm onClose={() => setShowForm(false)} />
             </div>
           </div>
         )}

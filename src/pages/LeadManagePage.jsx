@@ -1,8 +1,8 @@
 import React from "react";
-import Sidebar from "@/components/common/sidebar";
-import ProfileHeader from "@/components/common/ProfileHeader";
-import ProfileWithHistoryCard from "@/components/common/ProfileWithHistoryCard"; 
-import NewComment from "@/components/LeadManage/NewComments";
+import Sidebar from "@/Components/common/sidebar";
+import ProfileHeader from "@/Components/common/ProfileHeader";
+import ProfileWithHistoryCard from "@/Components/common/ProfileWithHistoryCard"; 
+import NewComment from "@/Components/LeadManage/NewComments";
 
 const LeadsManagePage = () => {
   return (

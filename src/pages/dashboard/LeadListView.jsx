@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import ProfileHeader from '@/components/common/ProfileHeader';
-import LeadToolbar from '@/components/dashboard/LeadToolbar';
+import ProfileHeader from '@/Components/common/ProfileHeader';
+import LeadToolbar from '@/Components/dashboard/LeadToolbar';
 import { ENDPOINTS } from '../../api/constraints';
 import Loader from '../../Components/common/Loader';
 
@@ -21,7 +21,6 @@ const LeadListViewPage = () => {
 
       try {
         user_data_parsed = JSON.parse(user_data);
-        console.log(user_data_parsed)
       } catch (err) {
         console.error('Invalid user data in localStorage:', err);
         setError('User data is invalid');
@@ -38,7 +37,7 @@ const LeadListViewPage = () => {
       }
 
       try {
-        const response = await fetch(`${ENDPOINTS.BASE_URL_IS}/lead/user/${user_data_parsed.iUser_id}`, {
+        const response = await fetch(`${ENDPOINTS.BASE_URL_IS}/lead/user/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -46,9 +45,7 @@ const LeadListViewPage = () => {
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch leads: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Failed to fetch leads: ${response.status}`);
 
         const data = await response.json();
         if (Array.isArray(data.details)) {
@@ -70,7 +67,7 @@ const LeadListViewPage = () => {
   const filteredLeads = leads
     .filter((lead) => {
       if (activeTab === 'All Leads') return true;
-      if (activeTab === 'My Leads') return lead.assignedTo === 'Shivakumar'; // Replace with dynamic user name if needed
+      if (activeTab === 'My Leads') return lead.assignedTo === 'Shivakumar'; // TODO: Replace with dynamic name
       if (activeTab === 'Converted Leads') return lead.status === 'Converted';
       return true;
     })
@@ -84,13 +81,13 @@ const LeadListViewPage = () => {
     );
 
   return (
-    <div className="flex">
-      <main className="flex-1 bg-gray-50 min-h-screen p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">Lead Management</h1>
-          <ProfileHeader />
-        </div>
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <header className="flex justify-between items-center p-4 bg-white shadow-sm">
+        <h1 className="text-xl font-semibold text-gray-800">Lead Management</h1>
+        <ProfileHeader />
+      </header>
 
+      <main className="flex-1 p-4">
         <LeadToolbar
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -103,39 +100,30 @@ const LeadListViewPage = () => {
         />
 
         {loading ? (
-          <Loader/>
+          <Loader />
         ) : error ? (
-          <p className="text-red-500">Error: {error}</p>
+          <div className="mt-6 text-center text-red-500 font-medium">{error}</div>
         ) : (
-          <div className="overflow-auto mt-6">
-            <table className="min-w-full table-auto border-collapse">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="p-2">Name</th>
-                  <th className="p-2">Organization</th>
-                  <th className="p-2">Phone</th>
-                  <th className="p-2">Email</th>
-                  <th className="p-2">Assigned To</th>
-                  <th className="p-2">Modified</th>
-                  <th className="p-2">Status</th>
-                  <th className="p-2">Lead</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLeads.map((lead, idx) => (
-                  <tr key={idx} className="border-b text-sm">
-                    <td className="p-2">{lead.clead_name}</td>
-                    <td className="p-2">{lead.corganization}</td>
-                    <td className="p-2">{lead.iphone_no}</td>
-                    <td className="p-2">{lead.cemail}</td>
-                    <td className="p-2">{lead.assignedTo}</td>
-                    <td className="p-2">{lead.dmodified_dt}</td>
-                    <td className="p-2">{lead.lead_status?.clead_name}</td>
-                    <td className="p-2">{lead.lead_potential?.clead_name}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid gap-4 mt-6">
+            {filteredLeads.map((lead, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-2 transition-all hover:shadow-md"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-gray-800">{lead.clead_name}</h2>
+                  <span className="text-sm text-gray-500">{lead.dmodified_dt}</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  <p><span className="font-medium">Organization:</span> {lead.corganization}</p>
+                  <p><span className="font-medium">Phone:</span> {lead.iphone_no}</p>
+                  <p><span className="font-medium">Email:</span> {lead.cemail}</p>
+                  <p><span className="font-medium">Assigned To:</span> {lead.assignedTo}</p>
+                  <p><span className="font-medium">Status:</span> {lead.lead_status?.clead_name}</p>
+                  <p><span className="font-medium">Potential:</span> {lead.lead_potential?.clead_name}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>

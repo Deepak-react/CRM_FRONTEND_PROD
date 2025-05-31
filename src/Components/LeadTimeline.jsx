@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { ENDPOINTS } from "../api/constraints";
 
-// Utility: Format timestamp to readable string
+// Map activity types to colors for timeline dots and lines
+const activityColors = {
+  lead_created: "#28a745", // green
+  follow_up: "#fd7e14", // orange
+  proposal_sent: "#007bff", // blue
+  comment_added: "#ffc107", // yellow
+  assigned_to_user: "#6f42c1", // purple
+  default: "#6c757d", // gray
+};
 
 const getActivityMessage = (activity) => {
   const { activitytype, data, user, performedbyid } = activity;
@@ -31,6 +39,9 @@ const getActivityMessage = (activity) => {
   }
 };
 
+// Helper: Get color for a given activity type, fallback to default
+const getActivityColor = (type) => activityColors[type] || activityColors.default;
+
 export default function LeadTimeline({ leadId }) {
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
@@ -50,14 +61,10 @@ export default function LeadTimeline({ leadId }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("API Error:", errorData);
         throw new Error(errorData.message || `Failed to fetch activity log (Status: ${response.status})`);
       }
 
       const data = await response.json();
-      console.log("API Response Data:", data);
-
-      // Sort activities by timestamp in descending order (latest first)
       const sortedHistory = data.sort(
         (a, b) => new Date(b.activitytimestamp) - new Date(a.activitytimestamp)
       );
@@ -74,88 +81,131 @@ export default function LeadTimeline({ leadId }) {
   }, [leadId]);
 
   return (
-    <div className="relative w-full h-[600px] overflow-y-auto px-6 py-10 bg-gray-50">
-      <div className="relative w-full flex flex-col items-center">
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+    <div className="relative w-full h-[600px] overflow-y-auto px-6 py-10 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="flex flex-col items-center space-y-8 max-w-5xl mx-auto">
 
-        {history.length === 0 && !error && (
-          <div className="text-gray-500">No activity found for this lead.</div>
+        {error && (
+          <div className="text-red-700 bg-red-100 rounded-lg px-6 py-3 text-sm shadow-md w-full max-w-md text-center">
+            {error}
+          </div>
+        )}
+
+        {!error && history.length === 0 && (
+          <div className="text-gray-500 text-sm italic">No activity found for this lead.</div>
         )}
 
         {history.map((entry, index) => {
           const isLeft = index % 2 === 0;
           const isLast = index === history.length - 1;
           const message = getActivityMessage(entry);
-    
-          const performedBy = entry.performedbyid
-            ? `User ${entry.performedbyid}`
-            : "System";
-            
-            const date = new Date(entry.activitytimestamp);
-                        const humanReadable = date.toLocaleString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            });
+
+          const performedBy = entry.user?.cFull_name || `User ${entry.performedbyid || "System"}`;
+          const date = new Date(entry.activitytimestamp);
+          const humanReadable = date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+
+          const color = getActivityColor(entry.activitytype);
 
           return (
-            <div key={entry.id || index} className="flex w-full relative min-h-[120px]">
-              {/* Left card */}
-              <div className="w-1/2 flex justify-end pr-6">
+            <div
+              key={entry.id || index}
+              className="flex w-full relative min-h-[140px]"
+              aria-label={`Timeline event: ${message}`}
+            >
+              {/* Left content */}
+              <div className="w-1/2 flex justify-end pr-8">
                 {isLeft && (
-                  <div className="bg-white border rounded-xl shadow p-4 w-80 z-10">
-                    <h3 className="font-bold text-lg">Activity</h3>
-                    <p className="text-sm font-semibold text-gray-600 mt-1">{message}</p>
-                   <div className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${performedBy.replace(" ", "+")}`}
-                      alt="avatar"
-                      className="w-5 h-5 rounded-full"
-                    />
-                    <span>{humanReadable}</span>
-                  </div>
-                  </div>
+                  <article
+                    className="bg-white border border-gray-200 rounded-3xl shadow-lg p-6 w-96 hover:shadow-xl transition-shadow duration-300"
+                    role="region"
+                    aria-live="polite"
+                  >
+                    <h3
+                      className="text-lg font-semibold text-gray-900 mb-1"
+                      style={{ color }}
+                    >
+                      Activity
+                    </h3>
+                    <p className="text-gray-700 text-base">{message}</p>
+                    <footer className="mt-4 flex items-center space-x-3 text-sm text-gray-500">
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(performedBy)}`}
+                        alt={`Avatar of ${performedBy}`}
+                        className="w-7 h-7 rounded-full shadow-sm border border-gray-300"
+                        loading="lazy"
+                      />
+                      <time dateTime={date.toISOString()}>{humanReadable}</time>
+                    </footer>
+                  </article>
                 )}
               </div>
 
               {/* Center timeline */}
               <div className="flex flex-col items-center w-0 relative">
-                <div className="w-8 h-8 bg-black rounded-full border-2 border-white z-10 relative" />
-                <div
-                  className={`absolute top-[6px] h-0.5 w-[40px] bg-black ${
-                    isLeft ? "right-[calc(100%+12px)]" : "left-[calc(100%+12px)]"
-                  }`}
+                <span
+                  className="block rounded-full border-4 border-white shadow-md"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    backgroundColor: color,
+                    zIndex: 10,
+                  }}
+                  aria-hidden="true"
+                />
+                <span
+                  className="absolute top-[10px]"
+                  style={{
+                    width: 48,
+                    height: 4,
+                    backgroundColor: color,
+                    ...(isLeft ? { right: "calc(100% + 12px)" } : { left: "calc(100% + 12px)" }),
+                  }}
                 />
                 {!isLast && (
                   <div className="flex flex-col items-center mt-2 space-y-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="w-1 h-5 bg-black rounded-full opacity-60" />
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className="w-1 h-5 rounded-full opacity-60"
+                        style={{ backgroundColor: color }}
+                        aria-hidden="true"
+                      />
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Right card */}
-              <div className="w-1/2 flex justify-start pl-6">
+              {/* Right content */}
+              <div className="w-1/2 flex justify-start pl-8">
                 {!isLeft && (
-                  <div className="bg-white border rounded-xl shadow p-4 w-80 z-10">
-                    <h3 className="font-bold text-lg">Activity</h3>
-                    <p className="text-sm font-semibold text-gray-600 mt-1">{message}</p>
-                    <div className="text-xs text-gray-500 mt-2 flex items-center gap-2">
+                  <article
+                    className="bg-white border border-gray-200 rounded-3xl shadow-lg p-6 w-96 hover:shadow-xl transition-shadow duration-300"
+                    role="region"
+                    aria-live="polite"
+                  >
+                    <h3
+                      className="text-lg font-semibold text-gray-900 mb-1"
+                      style={{ color }}
+                    >
+                      Activity
+                    </h3>
+                    <p className="text-gray-700 text-base">{message}</p>
+                    <footer className="mt-4 flex items-center space-x-3 text-sm text-gray-500">
                       <img
-                        src={`https://ui-avatars.com/api/?name=${performedBy.replace(
-                          " ",
-                          "+"
-                        )}`}
-                        alt="avatar"
-                        className="w-5 h-5 rounded-full"
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(performedBy)}`}
+                        alt={`Avatar of ${performedBy}`}
+                        className="w-7 h-7 rounded-full shadow-sm border border-gray-300"
+                        loading="lazy"
                       />
-                    <span>{humanReadable}</span>
-                    </div>
-                  </div>
+                      <time dateTime={date.toISOString()}>{humanReadable}</time>
+                    </footer>
+                  </article>
                 )}
               </div>
             </div>

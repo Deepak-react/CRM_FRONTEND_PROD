@@ -3,7 +3,7 @@ import React from "react";
 export default function RemindersCard({ reminder_data }) {
   const now = new Date();
 
-  console.log("Reminder Data:", reminder_data); // Log the reminder_data prop to check its value
+  //console.log("Reminder Data:", reminder_data); // Log the reminder_data prop to check its value
 
   // Transform the data to format each reminder
   const reminders = reminder_data?.map((reminder) => {
@@ -34,7 +34,7 @@ export default function RemindersCard({ reminder_data }) {
   }) || [];
 
   return (
-    <div className="bg-white rounded-2xl p-6 w-full">
+    <div className="bg-white rounded-3xl p-6 w-full ">
       <h2 className="text-xl font-semibold mb-4">Reminders</h2>
 
       {reminders.length > 0 ? (

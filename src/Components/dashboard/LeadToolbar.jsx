@@ -8,18 +8,6 @@ const LeadToolbar = () => {
   const [sortAsc, setSortAsc] = useState(true);
   const [viewMode, setViewMode] = useState('card');
 
-  // Dummy data
-    const allLeads = [
-      { name: 'Karthik Raja', organization: 'Zero  services', phone: '98745 61230', email: 'harish@gmail.com', assignedTo: 'Shivakumar', modified: 'week ago', status: 'Contacted', lead: 'Hot', category: 'My Leads' },
-      { name: 'Karthik Raja', organization: 'Zero Consultancy services', phone: '98745 61230', email: 'harish@gmail.com', assignedTo: 'Shivakumar', modified: 'week ago', status: 'Pending', lead: 'Warm', category: 'All Leads' },
-      { name: 'Karthik Raja', organization: 'Zero Consultancy services', phone: '98745 61230', email: 'harish@gmail.com', assignedTo: 'Shivakumar', modified: 'week ago', status: 'Follow-up', lead: 'Cold', category: 'Converted Leads' },
-      ...Array(7).fill().map(() => ({
-        name: 'Karthik Raja', organization: 'Zero Consultancy services', phone: '98745 61230',
-        email: 'harish@gmail.com', assignedTo: 'Shivakumar', modified: 'week ago',
-        status: 'Contacted', lead: 'Hot', category: 'My Leads'
-      }))
-    ];
-
   const filteredLeads = allLeads.filter((lead) => {
     if (activeTab === 'All Leads') return true;
     return lead.category === activeTab;

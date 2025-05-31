@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-
+import DatePicker from 'react-datepicker';
+import TimePicker from 'react-time-picker';
 const apiEndPoint = import.meta.env.VITE_API_URL;
 const token = localStorage.getItem("token");
 
@@ -15,6 +16,9 @@ const ReminderForm = () => {
   const [users, setUsers] = useState([]);
   const [reminderList, setReminderList] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterTime, setFilterTime] = useState("");
 
   const [form, setForm] = useState({
     title: "",
@@ -44,17 +48,13 @@ const ReminderForm = () => {
   };
 
   const validateForm = () => {
-    if (!form.title || !form.content || !form.reminderDate || !form.time)
-      return false;
-
+    if (!form.title || !form.content || !form.reminderDate || !form.time) return false;
     const selectedDateTime = new Date(`${form.reminderDate}T${form.time}`);
     const now = new Date();
-
     if (selectedDateTime < now) {
       toast.error("Reminder date and time must be in the future.");
       return false;
     }
-
     return true;
   };
 
@@ -63,7 +63,6 @@ const ReminderForm = () => {
     if (!validateForm()) return;
 
     setSubmitting(true);
-
     const data = { ...form, status };
     data.reminderDate = new Date(`${form.reminderDate}T${form.time}`).toISOString();
     data.assignt_to = Number(form.assignt_to);
@@ -79,7 +78,6 @@ const ReminderForm = () => {
       });
 
       const result = await response.json();
-
       if (!response.ok) {
         toast.error(`Error: ${result.message || "Could not add reminder"}`);
         return;
@@ -92,7 +90,7 @@ const ReminderForm = () => {
         time: "",
         priority: "Normal",
         assignt_to: "",
-        ilead_id: leadId,
+        ilead_id: Number(leadId),
       });
 
       toast.success(status === "submitted" ? "Reminder submitted" : "Saved as draft");
@@ -118,9 +116,8 @@ const ReminderForm = () => {
       const data = await response.json();
       if (response.ok) {
         setReminderList(data.message);
-        console.log(data.message);
       } else {
-        toast.error("Failed to fetch data");
+        toast.error("Failed to fetch reminders");
       }
     } catch (e) {
       console.error(e);
@@ -143,27 +140,62 @@ const ReminderForm = () => {
     fetchUsers();
   }, []);
 
+  const filteredReminders = reminderList.filter((reminder) => {
+    const matchesSearch = reminder.cremainder_title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = filterDate ? new Date(reminder.dremainder_dt).toISOString().slice(0, 10) === filterDate : true;
+    const matchesTime = filterTime ? new Date(reminder.dremainder_dt).toTimeString().slice(0, 5) === filterTime : true;
+    return matchesSearch && matchesDate && matchesTime;
+  });
+
   return (
-    <div className="relative min-h-screen bg-gray-50 p-6">
+    <div className="relative min-h-screen bg-[#f8f8f8] p-6">
       <ToastContainer position="top-right" autoClose={2000} />
-      <div className="flex justify-end mb-4">
-        <button onClick={() => setShowForm(true)} className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800">
-          + Add Reminder
-        </button>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm">
+          <Search className="text-gray-500" size={18} />
+          <input
+            type="text"
+            placeholder="Search reminders..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-transparent outline-none text-sm"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="border border-gray-300 rounded-full px-3 py-1 text-sm bg-white shadow-sm"
+          />
+          <input
+            type="time"
+            value={filterTime}
+            onChange={(e) => setFilterTime(e.target.value)}
+            className="border border-gray-300 rounded-full px-3 py-1 text-sm bg-white shadow-sm"
+          />
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition"
+          >
+            + Add Reminder
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-col divide-y divide-gray-200 bg-white rounded-md shadow-sm">
-        {reminderList.length === 0 ? (
-          <div className="text-center p-6">No reminders available.</div>
+      <div className="flex flex-col divide-y divide-gray-200 bg-white rounded-3xl shadow-md overflow-hidden">
+        {filteredReminders.length === 0 ? (
+          <div className="text-center p-6 text-gray-500">No reminders match your criteria.</div>
         ) : (
-          reminderList.map((reminder) => (
+          filteredReminders.map((reminder) => (
             <div key={reminder.iremainder_id} className="py-4 px-6 hover:bg-gray-50 transition duration-150">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-md font-semibold text-gray-800">Title: {reminder.cremainder_title}</h3>
+                  <h3 className="text-md font-semibold text-gray-900">📌 {reminder.cremainder_title}</h3>
                   <p className="text-sm text-gray-600 mt-1">{reminder.cremainder_content}</p>
                   <div className="text-xs text-gray-500 mt-2">
-                    Created by: <span className="font-medium">{reminder.created_by}</span> 
+                    Created by: <span className="font-medium">{reminder.created_by}</span>
                   </div>
                   <div className="text-xs mt-1 text-gray-600">Priority: <span className="font-semibold">{reminder.priority || 'Normal'}</span></div>
                   <div className="text-xs text-gray-600">Assigned to: <span className="font-semibold">{reminder.assigned_to}</span></div>
@@ -188,13 +220,13 @@ const ReminderForm = () => {
               <h2 className="font-semibold text-lg mt-5 mb-4">New Reminder</h2>
               <form onSubmit={(e) => handleSubmit(e, "submitted")}>
                 <label className="block text-sm mb-2">Title *</label>
-                <input className="w-full border p-2 mb-4 rounded bg-gray-100" name="title" value={form.title} onChange={handleChange} maxLength={100} required />
+                <input className="w-full border p-2 mb-4 rounded-xl bg-gray-100" name="title" value={form.title} onChange={handleChange} maxLength={100} required />
 
                 <label className="block text-sm mb-2">Description *</label>
-                <textarea className="w-full border p-2 mb-4 rounded h-24 bg-gray-100" name="content" maxLength={300} value={form.content} onChange={handleChange} required></textarea>
+                <textarea className="w-full border p-2 mb-4 rounded-xl h-24 bg-gray-100" name="content" maxLength={300} value={form.content} onChange={handleChange} required></textarea>
 
                 <label className="block text-sm mb-2">Priority</label>
-                <select name="priority" className="w-full border p-2 mb-4 rounded bg-gray-100" value={form.priority} onChange={handleChange}>
+                <select name="priority" className="w-full border p-2 mb-4 rounded-xl bg-gray-100" value={form.priority} onChange={handleChange}>
                   <option value="Low">Low</option>
                   <option value="Normal">Normal</option>
                   <option value="High">High</option>
@@ -202,7 +234,7 @@ const ReminderForm = () => {
                 </select>
 
                 <label className="block text-sm mb-2">Assign To</label>
-                <select name="assignt_to" className="border p-2 mb-4 rounded w-full bg-gray-100" value={form.assignt_to} onChange={handleChange}>
+                <select name="assignt_to" className="border p-2 mb-4 rounded-xl w-full bg-gray-100" value={form.assignt_to} onChange={handleChange}>
                   <option value="">Select User</option>
                   {users.map((user) => (
                     <option key={user.iUser_id} value={user.iUser_id}>
@@ -212,16 +244,15 @@ const ReminderForm = () => {
                 </select>
 
                 <label className="block text-sm mb-2">Date *</label>
-                <input type="date" className="border p-2 mb-4 rounded w-full bg-gray-100" name="reminderDate" value={form.reminderDate} onChange={handleChange} required />
+                <input type="date" className="border p-2 mb-4 rounded-xl w-full bg-gray-100" name="reminderDate" value={form.reminderDate} onChange={handleChange} required />
 
                 <label className="block text-sm mb-2">Time *</label>
-                <input type="time" className="border p-2 mb-4 rounded w-full bg-gray-100" name="time" value={form.time} onChange={handleChange} required />
+                <input type="time" className="border p-2 mb-4 rounded-xl w-full bg-gray-100" name="time" value={form.time} onChange={handleChange} required />
 
-                <div className="flex gap-4">
-                  <button type="submit" disabled={submitting} className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <div className="flex gap-4 mt-2">
+                  <button type="submit" disabled={submitting} className="bg-blue-900 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700">
                     {submitting ? "Saving..." : "Submit"}
                   </button>
-                  
                 </div>
               </form>
             </div>

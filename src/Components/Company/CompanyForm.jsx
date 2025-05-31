@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_URL = 'http://192.168.0.107:3000/api/company';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const CompanyForm = ({ initialData, onClose }) => {
   const [formData, setFormData] = useState({

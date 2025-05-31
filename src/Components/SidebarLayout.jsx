@@ -1,6 +1,6 @@
 // SidebarLayout.jsx
 import React from 'react';
-import Sidebar from '@/components/common/sidebar'
+import Sidebar from '@/Components/common/sidebar'
 import { Outlet } from 'react-router-dom';
 
 const SidebarLayout = () => {

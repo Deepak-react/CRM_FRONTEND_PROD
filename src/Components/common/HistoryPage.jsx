@@ -1,44 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-// Dummy data
-const dummyData = [
-  {
-    user: "Shivakumar",
-    action: "Modified",
-    date: "22 December",
-    time: "11:00 AM",
-    avatar: "https://i.pravatar.cc/40?img=1",
-  },
-  {
-    user: "Priya",
-    action: "Updated",
-    date: "21 December",
-    time: "4:15 PM",
-    avatar: "https://i.pravatar.cc/40?img=2",
-  },
-  {
-    user: "Arun",
-    action: "Deleted",
-    date: "20 December",
-    time: "9:30 AM",
-    avatar: "https://i.pravatar.cc/40?img=3",
-  },
-  {
-    user: "Meena",
-    action: "Created",
-    date: "19 December",
-    time: "3:00 PM",
-    avatar: "https://i.pravatar.cc/40?img=4",
-  },
-  {
-    user: "John",
-    action: "Modified",
-    date: "18 December",
-    time: "2:00 PM",
-    avatar: "https://i.pravatar.cc/40?img=5",
-  },
-];
-
 const HistoryPage = () => {
   const [history, setHistory] = useState([]);
   const [showAll, setShowAll] = useState(false);

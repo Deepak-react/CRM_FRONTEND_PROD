@@ -1,34 +1,5 @@
 import React from "react";
 
-const leads = [
-  {
-    id: 1,
-    name: "Govind raj",
-    status: "Contacted",
-    assignedTo: "Shivakumar",
-    modifiedBy: "Shivakumar",
-    time: "01:00 PM on 24th Apr",
-    avatar: "/public/images/dashboard/grl.png", // Replace with your avatar image path
-  },
-  {
-    id: 2,
-    name: "Govind raj",
-    status: "Contacted",
-    assignedTo: "Shivakumar",
-    modifiedBy: "Shivakumar",
-    time: "01:00 PM on 24th Apr",
-    avatar: "/public/images/dashboard/grl.png",
-  },
-  {
-    id: 3,
-    name: "Govind raj",
-    status: "Contacted",
-    assignedTo: "Shivakumar",
-    modifiedBy: "Shivakumar",
-    time: "01:00 PM on 24th Apr",
-    avatar: "/public/images/dashboard/grl.png",
-  },
-];
 
 export default function OrganizationTable() {
   return (

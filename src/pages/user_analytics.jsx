@@ -2,7 +2,7 @@ import React from "react";
 import ProgressBar from "../Components/common/ProgressBar";
 import TabsBar from "../Components/common/TabsBar";
 import ProfileHeader from "../Components/common/ProfileHeader";
-import ProfileWithHistoryCard from "@/components/common/ProfileWithHistoryCard";
+import ProfileWithHistoryCard from "@/Components/common/ProfileWithHistoryCard";
 import SalesFunnel from "../Components/user_analyticts_status";
 
 const UserAnalyticsPage = () => {

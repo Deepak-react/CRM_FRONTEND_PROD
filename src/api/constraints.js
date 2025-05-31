@@ -19,12 +19,16 @@ export const ENDPOINTS = {
   DASHBOARD_USER: `${BASE_URL}/lead/dashboard`,
   CREATE_EVENT: `${BASE_URL}/calender-event`,
   DASHBOARD_MANAGER: `${BASE_URL}/lead/manager`,
-  REMINDERS: `${BASE_URL}/reminder/get-rem`,
+  REMINDERS: `${BASE_URL}/reminder/get-reminder`,
   LEAD_STATUS_UPDATE: `${BASE_URL}/lead`,
   CONVERT_TO_DEAL: `${BASE_URL}/lead/convert-to-deal`,
   USER_REMINDER:`${BASE_URL}/reminder/user-reminder`,
   USER_CREATION: `${BASE_URL}/users`,
   GET_USERS: `${BASE_URL}/users`,
+  CONVERT_TO_LOST: `${BASE_URL}/lead`,
+   EXPORT_LEADS: `${BASE_URL}/lead/download`,
+  LOST_LEADS: `${BASE_URL}/reports/lost-leads`,
+  STAGE_LEADS: `${BASE_URL}/reports/sales-stage-leads`,
 
 
 

@@ -17,49 +17,6 @@ const AllReminders = () => {
     ""
   ];
 
-  useEffect(() => {
-    // ✅ Uncomment this block when your API is ready
-    /*
-    axios.get('/api/reminders')
-      .then((response) => {
-        setReminders(response.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching reminders:', error);
-      });
-    */
-
-    // 🧪 Fallback dummy data for now
-    const dummyReminders = [
-      {
-        id: 1,
-        assignedTo: 'Shivakumar',
-        title: 'Project Title',
-        description:
-          "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-        date: '2025-03-22',
-        time: '12:30 PM',
-      },
-      {
-        id: 2,
-        assignedTo: 'Meena',
-        title: 'Design Brief',
-        description: 'Prepare and review the wireframes for the new app screens.',
-        date: '2025-03-25',
-        time: '10:00 AM',
-      },
-      {
-        id: 3,
-        assignedTo: 'Ravi',
-        title: 'Client Meeting',
-        description:
-          'Discuss project updates and deliverables with the client team.',
-        date: '2025-03-26',
-        time: '03:00 PM',
-      },
-    ];
-    setReminders(dummyReminders);
-  }, []);
 
   const handleViewEvent = (reminder) => {
     navigate(`/calendar?date=${reminder.date}`);
