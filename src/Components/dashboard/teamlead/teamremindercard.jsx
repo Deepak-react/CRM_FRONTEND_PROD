@@ -53,7 +53,7 @@ export default function RemindersCard() {
     try {
     
       const apiUrl = `${ENDPOINTS.MANAGER_REMINDER}/${currentUserId}`; 
-      console.log("API URL:", apiUrl);
+      // console.log("API URL:", apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "GET",

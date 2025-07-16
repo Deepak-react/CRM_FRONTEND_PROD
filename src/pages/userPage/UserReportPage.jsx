@@ -13,8 +13,8 @@ const UserReportPage = () => {
 
     const parsedUserId = urlUserId ? parseInt(urlUserId, 10) : null;
 
-    console.log("UserReportPage DEBUG: URL userId param:", urlUserId);
-    console.log("UserReportPage DEBUG: Parsed userId being passed to children:", parsedUserId);
+    // console.log("UserReportPage DEBUG: URL userId param:", urlUserId);
+    // console.log("UserReportPage DEBUG: Parsed userId being passed to children:", parsedUserId);
 
     // This block should prevent rendering AcheivementDashboard or UserDeals
     // if the userId is initially invalid.

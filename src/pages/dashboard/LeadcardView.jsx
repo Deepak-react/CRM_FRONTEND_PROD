@@ -42,7 +42,7 @@ const LeadCardViewPage = () => {
 
         try {
             tokenFromStorage = localStorage.getItem('token');
-            console.log("Token from local storage:", tokenFromStorage); 
+            // console.log("Token from local storage:", tokenFromStorage); 
 
             if (tokenFromStorage) {
                 const decodedToken = jwtDecode(tokenFromStorage);
@@ -256,7 +256,7 @@ const LeadCardViewPage = () => {
             return isOwnedByCurrentUser && isConverted;
         });
 
-        console.log("Filtered Deals (for 'deals' tab logic):", filteredDeals);
+        // console.log("Filtered Deals (for 'deals' tab logic):", filteredDeals);
 
         setDeals(filteredDeals);
 

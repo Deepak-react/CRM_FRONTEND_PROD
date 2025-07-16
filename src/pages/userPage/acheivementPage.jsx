@@ -118,7 +118,7 @@ function AcheivementDashboard({ userId }) {
                 url.searchParams.append('endDate', end);
             }
 
-            console.log(`Fetching achievements from: ${url.toString()}`);
+            // console.log(`Fetching achievements from: ${url.toString()}`);
 
             const response = await fetch(url.toString(), {
                 method: 'GET',
@@ -134,7 +134,7 @@ function AcheivementDashboard({ userId }) {
             }
 
             const data = await response.json();
-            console.log("Fetched achievement data:", data);
+            // console.log("Fetched achievement data:", data);
 
             setAchievements({
                 totalLeadClosed: data.totalLeadClosed || 0,

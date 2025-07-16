@@ -970,7 +970,7 @@ const ProfileCard = () => {
   const getUserIdFromToken = () => {
     const token = localStorage.getItem("token");
 
-    console.log("Token from localStorage:", token);
+   // console.log("Token from localStorage:", token);
     
     // console.log("Token", token);
     if (token) {

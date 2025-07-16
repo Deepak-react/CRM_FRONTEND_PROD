@@ -946,12 +946,12 @@ const CalendarView = () => {
                     onClick={
                       activeTab === 'reminders' && item.ilead_id
                         ? () => {
-                          console.log("Clicked reminder row. Navigating to lead ID:", item.ilead_id);
+                          // console.log("Clicked reminder row. Navigating to lead ID:", item.ilead_id);
                           goToDetail(item.ilead_id);
                         }
                         : activeTab === 'calendarEvents' && item.icalender_event
                           ? () => {
-                            console.log("Clicked calendar event row. Navigating to event ID:", item.icalender_event);
+                            // console.log("Clicked calendar event row. Navigating to event ID:", item.icalender_event);
                             goToCalendarEventDetail(item.icalender_event);
                           }
                           : null // If no valid ID for navigation, do nothing

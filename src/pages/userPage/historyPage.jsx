@@ -61,7 +61,7 @@ function HistoryDashboard({ userId }) {
                         activitytimestamp: remainder.dremainder_dt,
                     }));
                     setActivityData(mappedActivityData);
-                    console.log("HistoryDashboard: Mapped Remainder data to Activity History table:", mappedActivityData);
+                    // console.log("HistoryDashboard: Mapped Remainder data to Activity History table:", mappedActivityData);
                 } else {
                     console.warn("HistoryDashboard: 'fetchAllRemainderByUser' array not found or not an array in API response for Activity History. Setting activityData to empty.");
                     setActivityData([]);
