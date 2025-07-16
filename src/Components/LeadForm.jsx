@@ -1139,7 +1139,7 @@ const LeadForm = ({ onClose }) => {
  ))}
  {[
  {
- label: "Lead potential",
+ label: "Lead Potential",
  ref: potentialDropdownRef,
  inputName: "searchPotential",
  searchValue: searchPotential,
@@ -1155,7 +1155,7 @@ const LeadForm = ({ onClose }) => {
  emptyType: "potential"
  },
  {
- label: "Lead status",
+ label: "Lead Status",
  ref: statusDropdownRef,
  inputName: "searchStatus",
  searchValue: searchStatus,
@@ -1204,7 +1204,7 @@ const LeadForm = ({ onClose }) => {
  emptyType: "subindustry"
  },
  {
- label: "Lead source",
+ label: "Lead Source",
  ref: sourceDropdownRef,
  inputName: "searchSource",
  searchValue: searchSource,
@@ -1220,7 +1220,7 @@ const LeadForm = ({ onClose }) => {
  emptyType: "source"
  },
  {
- label: "Lead service",
+ label: "Lead Service",
  ref: serviceDropdownRef,
  inputName: "searchService",
  searchValue: searchService,

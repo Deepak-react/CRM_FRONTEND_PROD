@@ -21,7 +21,7 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [statusRemarks, setStatusRemarks] = useState([]);
   const [error, setError] = useState(null);
-  
+
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogValue, setDialogValue] = useState('');
   const [dialogStageIndex, setDialogStageIndex] = useState(null);
@@ -31,6 +31,7 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
   const [showRemarkDialog, setShowRemarkDialog] = useState(false);
   const [remarkData, setRemarkData] = useState({ remark: '', projectValue: '' });
   const [remarkStageId, setRemarkStageId] = useState(null);
+  const [selectedRemark, setSelectedRemark] = useState(null);
 
   const fetchStages = async () => {
     try {
@@ -88,7 +89,6 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
   }, [stages, leadData]);
 
   const handleStageClick = (clickedIndex, statusId) => {
-    // Prevent any status changes if lead is lost or won
     if (isLost || isWon) {
       showToast('info', 'Cannot change status for a lost or won lead.');
       return;
@@ -137,12 +137,10 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
+      if (!response.ok) throw new Error('Failed to update status');
 
       setCurrentStageIndex(newIndex);
-      
+
       if (stages[newIndex].name?.toLowerCase() === 'won') {
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 5000);
@@ -268,6 +266,7 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
       const newIndex = stages.findIndex(s => s.id === remarkStageId);
       await updateStage(newIndex, remarkStageId);
       setShowRemarkDialog(false);
+      await getStatusRemarks();
     } catch (err) {
       const serverMsg = err.response?.data?.Message;
       const issues = Array.isArray(serverMsg?.issues)
@@ -291,7 +290,7 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
         setStatusRemarks(response.data.Response);
       }
     } catch (e) {
-      console.error("Error fetching remarks:", e.message);
+      console.error('Error fetching remarks:', e.message);
     }
   };
 
@@ -308,25 +307,20 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
           const isCompleted = index < currentStageIndex;
           const isActive = index === currentStageIndex;
           const isClickable = index > currentStageIndex && !isLost && !isWon;
-
-          const matchedRemark = statusRemarks.find(
-            (r) => r.lead_status_id === stage.id
-          );
+          const matchedRemark = statusRemarks.find((r) => r.lead_status_id === stage.id);
 
           return (
             <div key={stage.id} className="flex flex-col items-center flex-1">
               <div
                 onClick={() => isClickable ? handleStageClick(index, stage.id) : null}
                 className={`relative flex items-center justify-center w-10 h-10 rounded-full 
-                  ${
-                    isCompleted
-                      ? 'bg-green-600 text-white'
-                      : isActive
-                      ? 'bg-blue-600 text-white'
-                      : isClickable
-                      ? 'bg-gray-300 hover:bg-gray-400 cursor-pointer'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  }
+                  ${isCompleted
+                    ? 'bg-green-600 text-white'
+                    : isActive
+                    ? 'bg-blue-600 text-white'
+                    : isClickable
+                    ? 'bg-gray-300 hover:bg-gray-400 cursor-pointer'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'}
                   transition-colors duration-200`}
                 title={matchedRemark ? matchedRemark.lead_status_remarks : ''}
               >
@@ -346,14 +340,7 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
         </div>
       )}
 
-      {/* {!isLost && (
-        <div className="flex justify-center mt-4">
-          <div className="flex items-center gap-2 text-red-600 text-lg font-semibold bg-red-50 px-4 py-2 rounded-full shadow">
-            <span role="img" aria-label="lost"></span> LOST
-          </div>
-        </div>
-      )} */}
-
+      {/* Dialogs for stage info and remarks */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Enter Details</DialogTitle>
         <DialogContent>
@@ -370,57 +357,36 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
                   <TextField {...params} label="Session Type" sx={{ mt: 2 }} />
                 )}
               />
-
-              <TextField
-                label="Start Time"
-                type="datetime-local"
-                fullWidth
+              <TextField label="Start Time" type="datetime-local" fullWidth sx={{ mt: 2 }}
                 value={dialogValue.demoSessionStartTime || ''}
                 onChange={(e) =>
                   setDialogValue(prev => ({ ...prev, demoSessionStartTime: e.target.value }))
                 }
-                sx={{ mt: 2 }}
                 InputLabelProps={{ shrink: true }}
               />
-
-              <TextField
-                label="End Time"
-                type="datetime-local"
-                fullWidth
+              <TextField label="End Time" type="datetime-local" fullWidth sx={{ mt: 2 }}
                 value={dialogValue.demoSessionEndTime || ''}
                 onChange={(e) =>
                   setDialogValue(prev => ({ ...prev, demoSessionEndTime: e.target.value }))
                 }
-                sx={{ mt: 2 }}
                 InputLabelProps={{ shrink: true }}
               />
-
-              <TextField
-                label="Notes"
-                fullWidth
-                multiline
-                rows={2}
+              <TextField label="Notes" fullWidth multiline rows={2} sx={{ mt: 2 }}
                 value={dialogValue.notes || ''}
                 onChange={(e) =>
                   setDialogValue(prev => ({ ...prev, notes: e.target.value }))
                 }
-                sx={{ mt: 2 }}
               />
-
-              <TextField
-                label="Place / Link"
-                fullWidth
+              <TextField label="Place / Link" fullWidth sx={{ mt: 2 }}
                 value={dialogValue.place || ''}
                 onChange={(e) =>
                   setDialogValue(prev => ({ ...prev, place: e.target.value }))
                 }
-                sx={{ mt: 2 }}
               />
-
               <Autocomplete
                 multiple
                 options={users}
-                getOptionLabel={(option) => option.bactive === true ? option.cFull_name : ''}
+                getOptionLabel={(option) => option?.cFull_name || ''}
                 isOptionEqualToValue={(option, value) => option.iUser_id === value.iUser_id}
                 value={dialogValue.demoSessionAttendees || []}
                 onChange={(e, newValue) =>
@@ -479,26 +445,53 @@ const StatusBar = ({ leadId, leadData, isLost, isWon }) => {
       {statusRemarks.length > 0 && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-4">Remarks Timeline</h3>
-          <div className="flex w-[100%] overflow-x-scroll space-x-4 px-2 py-4 relative">
-            {statusRemarks
-              .sort((a, b) => a.ilead_status_remarks_id - b.ilead_status_remarks_id)
-              .map((remark, index) => (
-                <div key={remark.ilead_status_remarks_id} className="relative flex-shrink-0">
-                  {index !== statusRemarks.length - 1 && (
-                    <div className="absolute top-1/2 left-full w-6 h-1 bg-gray-400 transform -translate-y-1/2 z-0"></div>
-                  )}
-
-                  <div className="font-sans bg-white w-[300px] shadow-xxl border border-blue-700 border-l-4 border-r-blue-800 rounded-3xl p-4 space-y-2 min-h-40 max-h-40 overflow-hidden z-10 cursor-default transition">
-                    <p className="text-sm break-words"><strong>Remark:</strong> {remark.lead_status_remarks}</p>
-                    <p className="text-sm"><strong>Created By:</strong> {remark.createdBy || '-'}</p>
-                    <p className="text-sm"><strong>Date:</strong> {new Date(remark.dcreated_dt).toLocaleDateString('en-GB').split('/').join('/')}</p>
-                    <p className="text-sm"><strong>Status:</strong> {remark.status_name}</p>
+          <div className="flex w-full overflow-x-scroll space-x-4 px-2 py-4 relative">
+            {statusRemarks.map((remark, index) => (
+              <div key={remark.ilead_status_remarks_id} className="relative flex-shrink-0">
+                {index !== statusRemarks.length - 1 && (
+                  <div className="absolute top-1/2 left-full w-6 h-1 bg-gray-400 transform -translate-y-1/2 z-0"></div>
+                )}
+                <div
+                  className="font-sans bg-white w-[300px] shadow-xxl border border-blue-700 border-l-4 border-r-blue-800 rounded-3xl p-4 space-y-2 min-h-40 max-h-40 overflow-hidden z-10 cursor-pointer transition"
+                  onClick={() => setSelectedRemark(remark)}
+                >
+                  <div className="space-y-2 text-sm">
+                    <p className="text-sm break-words line-clamp-2">
+                      <strong>Remark:</strong> {remark.lead_status_remarks}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Created By:</strong> {remark.createdBy || '-'}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Date:</strong> {new Date(remark.dcreated_dt).toLocaleDateString('en-GB')}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Status:</strong> {remark.status_name}
+                    </p>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </div>
       )}
+
+      <Dialog open={!!selectedRemark} onClose={() => setSelectedRemark(null)}>
+        <DialogTitle>Remark Details</DialogTitle>
+        <DialogContent dividers sx={{ borderRadius: '12px' }}>
+          {selectedRemark && (
+            <div className="space-y-2 text-sm">
+              <p className="text-sm break-words"><strong>Remark:</strong> {selectedRemark.lead_status_remarks}</p>
+              <p className="text-sm"><strong>Created By:</strong> {selectedRemark.createdBy || '-'}</p>
+              <p className="text-sm"><strong>Date:</strong> {new Date(selectedRemark.dcreated_dt).toLocaleDateString('en-GB')}</p>
+              <p className="text-sm"><strong>Status:</strong> {selectedRemark.status_name}</p>
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedRemark(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
       {showConfetti && <Confetti />}
     </div>

@@ -14,11 +14,14 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import moment from "moment"; // Import moment.js
+import moment from "moment";
 
 export default function SalesPipelineAnalysis() {
   const [pipelineData, setPipelineData] = useState(null);
   const [filter, setFilter] = useState("month");
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,8 +55,11 @@ export default function SalesPipelineAnalysis() {
 
         const result = await res.json();
         setPipelineData(result);
+        setLoading(false);
       } catch (e) {
-        console.error("Error in fetching sales pipeline data:", e.message);
+        console.error("Error fetching sales pipeline data:", e.message);
+        setError(e.message);
+        setLoading(false);
       }
     };
 
@@ -62,20 +68,17 @@ export default function SalesPipelineAnalysis() {
 
   const getDateLabelsForFilter = (filter) => {
     const labels = [];
-    const today = moment(); // Use moment for current date
+    const today = moment();
 
     if (filter === "week") {
-      // Start of the current week (Sunday)
-      const startOfWeek = today.startOf('week'); // moment.js defaults to Sunday as start of week
-
+      const startOfWeek = today.startOf('week');
       for (let i = 0; i < 7; i++) {
-        const date = startOfWeek.clone().add(i, 'days');
-        labels.push(date.format("ddd")); // e.g., "Sun", "Mon", "Tue"
+        labels.push(startOfWeek.clone().add(i, 'days').format("ddd"));
       }
     } else if (filter === "month") {
       const daysInMonth = today.daysInMonth();
       for (let d = 1; d <= daysInMonth; d++) {
-        labels.push(d.toString()); // Day number
+        labels.push(d.toString());
       }
     } else if (filter === "year") {
       labels.push(
@@ -87,100 +90,105 @@ export default function SalesPipelineAnalysis() {
   };
 
   const generateChartData = () => {
-    // Ensure pipelineData and leadsByDate for the current filter are available
-    const leadData = pipelineData?.leadsByDate?.[filter] ?? [];
+    if (!pipelineData?.leadsByDate?.[filter]) return [];
+
+    const leadData = pipelineData.leadsByDate[filter] || [];
     const labels = getDateLabelsForFilter(filter);
     const grouped = {};
 
-    // Initialize grouped object with all labels for the current filter
+    // Initialize with all possible labels
     labels.forEach((label) => {
-      grouped[label] = { label, Active: 0, Won: 0, Lost: 0 };
+      grouped[label] = { 
+        label, 
+        Active: 0, 
+        Won: 0, 
+        Lost: 0 
+      };
     });
 
+    // Process each lead
     leadData.forEach((lead) => {
-      const date = moment(lead.dcreated_dt); // Use moment to parse lead date
-      let label = "";
+      if (!lead.dcreated_dt) return;
 
-      if (filter === "week") {
-        label = date.format("ddd");
-      } else if (filter === "month") {
-        label = date.date().toString(); // Get day of the month as string
-      } else if (filter === "year") {
-        label = date.format("MMM"); // Get abbreviated month name
-      }
+      try {
+        const date = moment(lead.dcreated_dt);
+        let label = "";
 
-      // Only increment if the label exists in our predefined labels (for edge cases)
-      if (grouped[label]) {
-        if (lead.bactive && !lead.bisConverted) grouped[label].Active += 1;
-        else if (lead.bisConverted) grouped[label].Won += 1;
-        else if (!lead.bactive) grouped[label].Lost += 1;
+        if (filter === "week") {
+          label = date.format("ddd");
+        } else if (filter === "month") {
+          label = date.date().toString();
+        } else if (filter === "year") {
+          label = date.format("MMM");
+        }
+
+        if (grouped[label]) {
+          if (lead.bactive && !lead.bisConverted) grouped[label].Active += 1;
+          else if (lead.bisConverted) grouped[label].Won += 1;
+          else if (!lead.bactive) grouped[label].Lost += 1;
+        }
+      } catch (e) {
+        console.error("Error processing lead:", lead, e);
       }
     });
 
     return Object.values(grouped);
   };
 
-  // Re-generate chart data whenever the filter changes or pipelineData is fetched
   useEffect(() => {
-    if (pipelineData) { // Only update chart data if pipelineData is available
+    if (pipelineData) {
       setChartData(generateChartData());
     }
-  }, [filter, pipelineData]); // Depend on filter AND pipelineData
+  }, [filter, pipelineData]);
 
-  // Initial chart data generation (for the first render)
-  const [chartData, setChartData] = useState([]);
-
-
-  if (!pipelineData)
-    return <div className="p-6 text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-6 text-gray-500">Loading...</div>;
+  if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
+  if (!pipelineData) return <div className="p-6 text-gray-500">No data available</div>;
 
   const {
-    activeUnconvertedLeads,
-    avgDealRatio,
-    convertionRatio,
-    expectedRevenueThisMonth,
-    leadsByDate,
+    activeUnconvertedLeads = 0,
+    avgDealRatio = 0,
+    convertionRatio = 0,
+    expectedRevenueThisMonth = 0,
+    leadsByDate = {},
   } = pipelineData;
 
   const cardData = [
     {
       title: "Total Pipeline Value",
-      value: `₹${(expectedRevenueThisMonth || 0).toLocaleString("en-IN")}`,
+      value: `₹${expectedRevenueThisMonth.toLocaleString("en-IN")}`,
     },
     {
       title: "No. Of Open Opportunities",
-      value: activeUnconvertedLeads || "--",
+      value: activeUnconvertedLeads,
     },
     {
-      title: " Won Ratio",
-      value: `${Math.round(avgDealRatio) || 0}`,
+      title: "Won Ratio",
+      value: `${Math.round(avgDealRatio)}%`,
     },
     {
       title: "Pipeline Coverage Ratio",
-      value: `${(convertionRatio || 0).toFixed(2)}%`,
+      value: `${convertionRatio.toFixed(2)}%`,
     },
   ];
 
-  const totalProjectValue =
-    leadsByDate?.[filter]
-      ?.filter((lead) => lead.bactive && !lead.bisConverted)
-      .reduce((sum, lead) => sum + (lead.iproject_value ?? 0), 0) || 0;
+  const totalProjectValue = leadsByDate?.[filter]
+    ?.filter((lead) => lead.bactive && !lead.bisConverted)
+    .reduce((sum, lead) => sum + (lead.iproject_value || 0), 0) || 0;
 
-  // Calculate achieved percentage based on expected revenue
-  const achievedPercentage =
-    expectedRevenueThisMonth > 0
-      ? Math.min(
-          ((totalProjectValue / expectedRevenueThisMonth) * 100).toFixed(2),
-          100
-        )
-      : 0;
+  const achievedPercentage = expectedRevenueThisMonth > 0
+    ? Math.min(
+        ((totalProjectValue / expectedRevenueThisMonth) * 100).toFixed(2),
+        100
+      )
+    : 0;
 
   const pieData = [
-    { name: "Achieved", value: achievedPercentage },
-    { name: "Remaining", value: (100 - achievedPercentage).toFixed(2) }, // Ensure remaining is also fixed to 2 decimal places
+    { name: "Achieved", value: parseFloat(achievedPercentage) },
+    { name: "Remaining", value: parseFloat((100 - achievedPercentage).toFixed(2)) },
   ];
 
-  const COLORS = ["#1B5E20", "#D9D9D9"]; // Green for achieved, light gray for remaining
+  const COLORS = ["#1B5E20", "#D9D9D9"];
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -212,6 +220,7 @@ export default function SalesPipelineAnalysis() {
           Sales Pipeline Analysis
         </h1>
       </div>
+
       {/* Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
         {cardData.map((card, idx) => (
@@ -245,37 +254,38 @@ export default function SalesPipelineAnalysis() {
               <option value="week">Week</option>
             </select>
           </div>
-          <div className="w-full h-75">
+          <div className="w-full h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 30, bottom: 15 }}>
-                {/* X-Axis with Label and adjusted offset and position */}
+              <BarChart 
+                data={chartData} 
+                margin={{ top: 20, right: 30, left: 30, bottom: 15 }}
+              >
                 <XAxis
                   dataKey="label"
                   label={{
                     value: "Time Period",
-                    position: "bottom", // Use 'bottom' for more explicit positioning outside the chart area
-                    offset: 25, // Reset offset as 'bottom' position handles spacing
+                    position: "bottom",
+                    offset: 25,
                     style: { fontSize: '14px', fill: '#555', fontWeight: 'bold' }
                   }}
-                  tickLine={false} // Hide tick lines for a cleaner look if desired
+                  tickLine={false}
                 />
-                {/* Y-Axis with Label and adjusted offset and position */}
                 <YAxis
                   allowDecimals={false}
                   label={{
                     value: "Number of Deals",
                     angle: -90,
-                    position: "left", // Use 'left' for explicit positioning outside the chart area
-                    offset: 0, // Reset offset as 'left' position handles spacing
+                    position: "left",
+                    offset: 0,
                     style: { fontSize: '14px', fill: '#555', fontWeight: 'bold' }
                   }}
-                  tickLine={false} // Hide tick lines
+                  tickLine={false}
                 />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="Active" stackId="a" fill="#0D47A1" />
-                <Bar dataKey="Won" stackId="a" fill="#61AAE5" />
-                <Bar dataKey="Lost" stackId="a" fill="#5D8FBF" />
+                <Bar dataKey="Active" stackId="a" fill="#0D47A1" name="Active" />
+                <Bar dataKey="Won" stackId="a" fill="#61AAE5" name="Won" />
+                <Bar dataKey="Lost" stackId="a" fill="#5D8FBF" name="Lost" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -287,7 +297,7 @@ export default function SalesPipelineAnalysis() {
             <h2 className="text-lg font-semibold text-gray-700 mb-4">
               Expected Revenue Achievement
             </h2>
-            <div className="relative w-full h-64">
+            <div className="relative w-full h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -299,6 +309,7 @@ export default function SalesPipelineAnalysis() {
                     innerRadius={60}
                     outerRadius={90}
                     paddingAngle={5}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
                     {pieData.map((entry, index) => (
                       <Cell
@@ -307,19 +318,22 @@ export default function SalesPipelineAnalysis() {
                       />
                     ))}
                   </Pie>
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, "Percentage"]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
           <div className="flex flex-col items-center mt-4">
             <div className="text-xl font-bold text-gray-800">
-              ₹{expectedRevenueThisMonth?.toLocaleString("en-IN") || 0}
+              ₹{expectedRevenueThisMonth.toLocaleString("en-IN")}
             </div>
             <div className="text-xs text-green-600">
-              Achieved : {achievedPercentage}%
+              Achieved: {achievedPercentage}%
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              * For this month
+              <span className="text-red-600">*</span>For this month
             </div>
           </div>
         </div>
