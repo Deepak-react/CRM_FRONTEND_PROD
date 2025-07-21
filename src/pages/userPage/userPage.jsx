@@ -218,7 +218,7 @@ const UserPage = () => {
         </div>
       </div>
 
-      ---
+      
 
       {/* Loading and Error States */}
       {loading && (
@@ -362,7 +362,7 @@ const UserPage = () => {
         )
       )}
 
-      ---
+      
 
       {/* Pagination */}
       {totalPages > 1 && !loading && !error && displayedUsers.length > 0 && (
@@ -401,7 +401,7 @@ const UserPage = () => {
         </div>
       )}
 
-      ---
+    
 
       {/* User Creation Modal */}
       {isModalOpen && (
