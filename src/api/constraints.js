@@ -55,6 +55,7 @@ export const ENDPOINTS = {
   GENERAL_SETTINGS_UPDATE: `${BASE_URL}/general-setting/edit`,
   USER_ACHIEVEMENTS: `${BASE_URL}/user-target/user-achievements`,
   REPORT_LOST: `${BASE_URL}/reports/lost-leads`,
+  
   USER_POST: `${BASE_URL}/user-target`,
   USER_REPORT_DEALS: `${BASE_URL}/user-target/deals-closed-by-user`,
 

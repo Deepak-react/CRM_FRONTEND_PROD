@@ -304,10 +304,26 @@ export default function MasterModal({ master, onClose, companyId, userId, master
             };
         });
     };
+    const validateMasterName = (name, masterType) => {
+  if (!name) return `${masterType} name is required`;
+  if (name.length < 3) return `${masterType} name must be at least 3 characters`;
+  if (name.length > 50) return `${masterType} name cannot exceed 50 characters`;
+  return null;
+};
 
 const handleSave = async () => {
   if (!master) {
     toast.error("Master configuration is missing. Cannot save.");
+    return;
+  }
+
+  // Universal name validation for all masters
+  const nameField = master.payloadKey; // e.g., 'clead_name', 'cindustry_name', etc.
+  const nameValue = formData[nameField];
+  const validationError = validateMasterName(nameValue, master.title);
+  
+  if (validationError) {
+    setApiError(validationError);
     return;
   }
 
@@ -914,36 +930,63 @@ const handleEditSubIndustryClick = (subIndustryItem) => {
     </div>
 )}
 
-                           {/* Main Input Field (clead_name, subindustry_name, etc.) */}
-                            {/* In your form rendering section */}
+{/* Main Input Field (clead_name, subindustry_name, etc.) */}
 <div className="mb-4">
+  {selectedItemForEdit && master.payloadKey === 'subindustry_name' && (
+    <div className="mb-3">
+      <h3 className="text-lg font-semibold text-blue-700">
+        Industry:{" "}
+        {(() => {
+          const matchedIndustry = parentOptions.find(
+            (industry) =>
+              String(industry.iindustry_id) ===
+              String(selectedItemForEdit.iindustry_parent)
+          );
+          return matchedIndustry?.cindustry_name || "Not Found";
+        })()}
+      </h3>
+    </div>
+  )}
+
+ <div className="mb-4">
   <label htmlFor={master.payloadKey} className="block text-sm font-medium text-gray-700 mb-1">
     {master.modalKey || master.title}:
-    <span className="text-xs text-gray-500 ml-1">(3-50 characters)</span>
+    <span className="ml-2 text-xs text-green-500">
+      {formData[master.payloadKey]?.length || 0}/50 characters
+    </span>
   </label>
   <input
     id={master.payloadKey}
     name={master.payloadKey}
     type="text"
-    minLength={3}
-    maxLength={50}
-    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+    className={`mt-1 block w-full border ${
+      formData[master.payloadKey]?.length > 0 && 
+      (formData[master.payloadKey]?.length < 3 || formData[master.payloadKey]?.length > 50)
+        ? 'border-red-500' 
+        : 'border-gray-300'
+    } rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500`}
     value={formData[master.payloadKey] || ''}
     onChange={handleChange}
     required
+    minLength={3}
+    maxLength={50}
     disabled={isSaving}
   />
   {formData[master.payloadKey]?.length > 0 && (
-    <p className={`text-xs mt-1 ${
-      formData[master.payloadKey].length < 5 || formData[master.payloadKey].length > 50 
-        ? 'text-red-500' 
-        : 'text-green-500'
+    <p className={`mt-1 text-xs ${
+      formData[master.payloadKey]?.length < 3 || formData[master.payloadKey]?.length > 50
+        ? 'text-red-600'
+        : 'text-green-600'
     }`}>
-      {formData[master.payloadKey].length}/50 characters
+      {formData[master.payloadKey]?.length < 3
+        ? 'Minimum 3 characters required'
+        : formData[master.payloadKey]?.length > 50
+        ? 'Maximum 50 characters exceeded'
+        : 'Valid length'}
     </p>
   )}
 </div>
-
+</div>
                             {/* Order ID Input Field (Conditionally Rendered) */}
                             {master.title === "Status" && shouldFieldBeRendered('orderId', formData) && (
                                 <div className="mb-4">
