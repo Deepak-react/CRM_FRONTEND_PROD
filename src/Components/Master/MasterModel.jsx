@@ -328,8 +328,8 @@ const handleSave = async () => {
   }
 
   // 👇 Add length validation for service name (applies to all masters using payloadKey)
-  if (formData[master.payloadKey]?.length < 5 || formData[master.payloadKey]?.length > 50) {
-    setApiError(`${master.modalKey || master.title} must be between 5-50 characters`);
+  if (formData[master.payloadKey]?.length < 3 || formData[master.payloadKey]?.length > 50) {
+    setApiError(`${master.modalKey || master.title} must be between 3-50 characters`);
     return; // Stop execution if validation fails
   }
 

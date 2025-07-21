@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X } from "lucide-react";
-import { ENDPOINTS, ENDPOINTS, ENDPOINTS } from '../../api/constraints'; 
+import {  ENDPOINTS } from '../../api/constraints'; 
 
 export default function SalesForm({ onClose }) {
-  const ENDPOINTS = {
-    // USER_POST: "http://192.168.1.75:3000/api/user-target",
-    USER_POST: ENDPOINTS.USER_POST,
-    USER_GET: ENDPOINTS.USERS,
-  };
+  // const ENDPOINTS = {
+  //   // USER_POST: "http://192.168.1.75:3000/api/user-target",
+  //   USER_POST: ENDPOINTS.USER_POST,
+  //   USER_GET: ENDPOINTS.USERS,
+  // };
 
   const getCurrentDateTimeLocal = () => {
     const now = new Date();
@@ -60,7 +60,7 @@ export default function SalesForm({ onClose }) {
     }
 
     try {
-      const response = await fetch(ENDPOINTS.USER_GET, {
+      const response = await fetch(ENDPOINTS.USERS, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
